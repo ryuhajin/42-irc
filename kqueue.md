@@ -241,19 +241,25 @@ int main()
 1. change_list는 kqueue가 모니터링하게 할 fd list이다.
     * change_list는 kevent 구조체의 목록으로, kqueue가 모니터링할 파일 디스크립터(fd)와 관련된 이벤트 변경 사항들을 담고 있다.
     * 이 목록은 kevent() 호출 시에 kqueue에게 어떤 이벤트를 추가하거나 수정할지를 알려주는 데 사용된다.
+
 2. change_events 함수의 EV_SET 매크로를 통해 kqueue가 모니터링할 fd들의 필터를 세팅하고 change_list에 추가한다.
    * EV_SET 매크로는 kevent 구조체를 초기화하는 데 사용된다.
     * change_events 함수는 이벤트(예: 읽기 이벤트)를 설정하고 이를 change_list에 추가하여 kevent()가 나중에 이 변경 사항을 kqueue에 적용할 수 있도록 한다.
+
 3. event_list는 kqueue가 이벤트 발생을 감지한 fd list이다.
     * event_list는 kevent() 호출 시 kqueue가 감지한 이벤트를 저장하는 배열이다.
     * 이 배열에는 발생한 이벤트의 파일 디스크립터와 그 이벤트의 세부 정보가 포함된다.
+
 4. change_list.clear() 를 하는 이유
     * change_list에 fd들을 추가하고 kevent 함수로 kqueue에 등록하면 프로그램이 종료되거나 fd가 닫히기 전까지 kqueue가 자동으로 모니터링 한다.
     * 즉 kqueue에 등록을 마친 fd들은 모니터링 목록에 다시 등록할 필요가 없으니 change_list.clear() 를 통해 이벤트 목록을 초기화 해준다.
+
 5. kqueue는 change_list에 등록된 fd들을 모니터링하고 있다가 이벤트 발생을 감지하면 event_list에 이벤트가 발생한 fd를 추가한다.
     * 정확히는, kqueue는 kevent() 함수가 호출될 때마다 change_list를 기반으로 모니터링할 이벤트를 설정하거나 수정한다. * 이후, kqueue는 이들 이벤트를 지속적으로 모니터링하다가 이벤트가 발생하면 해당 이벤트를 event_list에 추가하여 반환한다.
+
 6. kevent를 통해 이벤트가 발생한 fd가 몇 개인지 체크한다.
     * kevent() 함수의 반환값은 감지된(발생한) 이벤트의 개수를 나타낸다. 이 값을 통해 이벤트가 몇 개인지 확인할 수 있다.
+
 7. 발생한 이벤트만큼 반복문을 돌며 kqueue가 event_list에 등록한 이벤트들의 요청을 처리한다.
     * kevent()의 반환값을 사용해 이벤트가 발생한 개수만큼 반복문을 실행하며, 각 이벤트를 처리한다.
     * 이 때, event_list의 각 항목을 참조하여 어떤 파일 디스크립터에서 어떤 종류의 이벤트가 발생했는지 확인하고, 이에 맞는 처리를 한다.

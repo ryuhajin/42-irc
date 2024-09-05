@@ -24,6 +24,15 @@ void settingServerAddr (sockaddr_in &serverAddr, char* port)
     serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 }
 
+void newEventRegister (std::vector<struct kevent>& newEvents,
+uintptr_t fd, int16_t filter, uint16_t flags,
+uint32_t fflags, intptr_t data, void *udata)
+{
+    struct kevent temp;
+    EV_SET(&temp, fd, filter, flags, fflags, data, udata);
+    newEvents.push_back(temp);
+}
+
 int main(int argc, char* argv[])
 {
     int server;
@@ -39,11 +48,17 @@ int main(int argc, char* argv[])
     
     if (listen(server, 10) == -1) // listen backlog 개수 상의하기
         exitPerror("listen failed.");
-    fcntl(server, F_SETFL, O_NONBLOCK);
+    fcntl(server, F_SETFL, O_NONBLOCK); //socket fd nonblock setting
 
     int kq;
     if ((kq = kqueue()) == -1)
         exitPerror("kqueue failed.");
+
+    std::map<int, std::string> clients; //int fd, std::string buffer
+    std::vector<struct kevent> newEvents;
+    struct kevent waitEvents[10];
+    
+    newEventRegister(newEvents, server, )
 
 
     return (0);

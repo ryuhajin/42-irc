@@ -1,0 +1,12 @@
+# build
+*.o
+*.a
+*.gch
+a.out
+*.dSYM/
+
+# editor / OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
